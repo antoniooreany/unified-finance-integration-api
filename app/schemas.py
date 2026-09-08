@@ -1,5 +1,6 @@
+
 from pydantic import BaseModel, ConfigDict
-from typing import List
+
 
 class Invoice(BaseModel):
     id: str
@@ -13,11 +14,11 @@ class Invoice(BaseModel):
     model_config = ConfigDict(extra="ignore")
 
 class ProviderResponse(BaseModel):
-    invoices: List[Invoice]
+    invoices: list[Invoice]
 
     model_config = ConfigDict(extra="ignore")
 
 class SyncResponse(BaseModel):
     status: str
     fetched_count: int
-    invoices: List[Invoice]
+    invoices: list[Invoice]

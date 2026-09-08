@@ -1,5 +1,6 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import JSONResponse
+
 from app.provider import fetch_invoices
 from app.schemas import SyncResponse
 

@@ -1,7 +1,8 @@
-import pytest
-from fastapi.testclient import TestClient
-import respx
 import httpx
+import pytest
+import respx
+from fastapi.testclient import TestClient
+
 from app.main import app
 
 client = TestClient(app)
@@ -140,7 +141,6 @@ def test_sync_invoices_strict_invoice_validation(mock_env):
         assert response.json() == {"error": "Invalid provider response"}
 
 def test_sync_invoices_proof_mocked_network(mock_env):
-    with respx.mock(assert_all_mocked=True):
+    with respx.mock(assert_all_mocked=True), pytest.raises(Exception, match=".*"):
         # Do not mock the endpoint. The client will try to call it and respx will block it.
-        with pytest.raises(Exception):
-            client.post("/api/v1/sync/invoices")
+        client.post("/api/v1/sync/invoices")
