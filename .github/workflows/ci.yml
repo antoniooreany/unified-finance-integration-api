@@ -1,0 +1,69 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - develop
+  pull_request:
+    branches:
+      - develop
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install --no-cache-dir -r requirements.txt
+
+      - name: Run Ruff
+        run: ruff check .
+
+      - name: Run Pytest
+        run: python -m pytest -v
+
+  docker-smoke-test:
+    runs-on: ubuntu-latest
+    needs: lint-and-test
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: docker build -t unified-finance-integration-api:test .
+
+      - name: Run container
+        run: |
+          docker run -d --name api-smoke-test \
+            -p 8000:8000 \
+            -e PROVIDER_BASE_URL="http://provider-mock:5000" \
+            -e PROVIDER_API_KEY="test-api-key-not-a-secret" \
+            unified-finance-integration-api:test
+
+      - name: Wait for readiness and test health endpoint
+        run: |
+          # Wait up to 10 seconds for the container to become ready
+          for i in {1..10}; do
+            response=$(curl -sSf http://localhost:8000/health || echo "failed")
+            if [ "$response" = '{"status":"ok"}' ]; then
+              echo "Health check passed!"
+              exit 0
+            fi
+            echo "Waiting for container..."
+            sleep 1
+          done
+          echo "Health check failed or timed out."
+          docker logs api-smoke-test
+          exit 1
+
+      - name: Stop and remove container
+        if: always()
+        run: |
+          docker stop api-smoke-test || true
+          docker rm api-smoke-test || true
