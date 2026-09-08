@@ -1,10 +1,12 @@
+import json
+
 import httpx
 from fastapi import HTTPException
 from pydantic import ValidationError
-import json
 
 from app.config import settings
-from app.schemas import ProviderResponse, Invoice
+from app.schemas import Invoice, ProviderResponse
+
 
 async def fetch_invoices() -> list[Invoice]:
     url = f"{settings.provider_base_url.rstrip('/')}/api/v1/invoices"
@@ -24,9 +26,7 @@ async def fetch_invoices() -> list[Invoice]:
             if retry_after and retry_after.isdigit():
                 err_headers["Retry-After"] = retry_after
             raise HTTPException(status_code=503, detail="Provider temporarily unavailable", headers=err_headers)
-        elif response.status_code == 500:
-            raise HTTPException(status_code=502, detail="Provider service error")
-        elif response.status_code >= 400:
+        elif response.status_code == 500 or response.status_code >= 400:
             raise HTTPException(status_code=502, detail="Provider service error")
 
         try:
@@ -34,8 +34,8 @@ async def fetch_invoices() -> list[Invoice]:
             if not isinstance(data, dict) or "invoices" not in data:
                 raise ValueError("Missing invoices key")
             if not isinstance(data["invoices"], list):
-                raise ValueError("invoices must be a list")
+                raise TypeError("invoices must be a list")
             provider_response = ProviderResponse.model_validate(data)
             return provider_response.invoices
-        except (json.JSONDecodeError, ValidationError, ValueError) as e:
+        except (json.JSONDecodeError, ValidationError, ValueError, TypeError) as e:
             raise HTTPException(status_code=502, detail="Invalid provider response") from e
