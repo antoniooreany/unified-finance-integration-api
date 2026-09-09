@@ -273,6 +273,59 @@
         color: var(--surface);
         border-color: var(--primary-hover);
       }
+
+      .invoice-details-card {
+        background: var(--surface-muted);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 16px;
+        margin: 8px 0;
+      }
+      .invoice-details-heading {
+        font-weight: 600;
+        margin-bottom: 12px;
+      }
+      .invoice-detail-value--amount {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: var(--primary);
+      }
+      .invoice-details-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+        margin-top: 12px;
+      }
+      .invoice-detail {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+      .invoice-detail-label {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+      .invoice-detail-value {
+        font-size: 0.875rem;
+        color: var(--text);
+        font-weight: 500;
+      }
+      .invoices tbody tr:not([hidden]):not([id^="invoice-details-"]):hover {
+        background: var(--surface-muted);
+      }
+      @media (max-width: 600px) {
+        .invoice-details-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+      }
+      @media (max-width: 420px) {
+        .invoice-details-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
     </style>
   </head>
   <body>
@@ -281,11 +334,6 @@
         <h1 data-testid="dashboard-title">Unified Finance</h1>
         <p class="lead">Manage and view provider invoices in one place.</p>
       </header>
-      <nav class="primary-nav" aria-label="Primary navigation">
-        <a class="nav-link" href="#dashboard">Dashboard</a>
-        <a class="nav-link" href="#invoices">Invoices</a>
-        <a class="nav-link" href="/docs">API Docs</a>
-      </nav>
 
 
       <main id="dashboard">
@@ -509,7 +557,50 @@
             detailTr.hidden = true;
             const detailsCell = document.createElement("td");
             detailsCell.setAttribute("colspan", "8"); // colspan="8"
-            detailsCell.textContent = "Invoice number: " + safeText(invoice.id) + " | Customer: " + safeText(invoice.contact_name) + " | Amount: " + amountHtml + " | Currency: " + safeText(invoice.currency) + " | Invoice date: " + safeText(invoice.date) + " | Due date: " + safeText(invoice.due_date) + " | Status: " + safeText(invoice.status);
+
+            const card = document.createElement("div");
+            card.className = "invoice-details-card";
+
+            const heading = document.createElement("div");
+            heading.textContent = "Invoice details";
+            heading.className = "invoice-details-heading";
+            card.appendChild(heading);
+
+            const grid = document.createElement("div");
+            grid.className = "invoice-details-grid";
+
+            const fields = [
+              { label: "Invoice number", value: safeText(invoice.id) },
+              { label: "Customer", value: safeText(invoice.contact_name) },
+              { label: "Amount", value: amountHtml },
+              { label: "Currency", value: safeText(invoice.currency) },
+              { label: "Invoice date", value: safeText(invoice.date) },
+              { label: "Due date", value: safeText(invoice.due_date) },
+              { label: "Status", value: safeText(invoice.status) }
+            ];
+
+            fields.forEach(function(field) {
+              const detailDiv = document.createElement("div");
+              detailDiv.className = "invoice-detail";
+
+              const labelDiv = document.createElement("div");
+              labelDiv.className = "invoice-detail-label";
+              labelDiv.textContent = field.label;
+              detailDiv.appendChild(labelDiv);
+
+              const valDiv = document.createElement("div");
+              valDiv.className = "invoice-detail-value";
+              valDiv.textContent = field.value;
+              if (field.label === "Amount") {
+                valDiv.classList.add("invoice-detail-value--amount");
+              }
+              detailDiv.appendChild(valDiv);
+
+              grid.appendChild(detailDiv);
+            });
+
+            card.appendChild(grid);
+            detailsCell.appendChild(card);
             detailTr.appendChild(detailsCell);
             fragment.appendChild(detailTr);
 

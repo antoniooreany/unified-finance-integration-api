@@ -110,3 +110,59 @@ def test_dashboard_has_expandable_invoice_details() -> None:
     assert "insertAdjacentHTML" not in body
     assert body.count("fetch(") == 1
     assert body.count("<button") == 1
+
+def test_dashboard_renders_structured_invoice_details_card() -> None:
+    body = client.get("/").text
+
+    assert "invoice-details-card" in body
+    assert "Invoice details" in body
+    assert "invoice-details-grid" in body
+    assert "invoice-detail" in body
+    assert "invoice-detail-label" in body
+    assert "invoice-detail-value" in body
+    assert "Invoice number" in body
+    assert "Customer" in body
+    assert "Amount" in body
+    assert "Currency" in body
+    assert "Invoice date" in body
+    assert "Due date" in body
+    assert "Status" in body
+    assert 'document.createElement("div")' in body
+    assert "textContent" in body
+    assert "grid-template-columns" in body
+    assert "@media" in body
+    assert "innerHTML" not in body
+    assert "insertAdjacentHTML" not in body
+    assert body.count("fetch(") == 1
+    assert body.count("<button") == 1
+
+def test_dashboard_styles_invoice_details_card_without_inline_styles() -> None:
+    body = client.get("/").text
+
+    assert "invoice-details-heading" in body
+    assert "invoice-detail-value--amount" in body
+    assert "grid-template-columns: repeat(3, 1fr)" in body
+    assert "@media (max-width: 600px)" in body
+    assert "@media (max-width: 420px)" in body
+    assert "grid-template-columns: 1fr" in body
+    assert "heading.style." not in body
+    assert "valDiv.style." not in body
+    assert "innerHTML" not in body
+    assert "insertAdjacentHTML" not in body
+    assert body.count("fetch(") == 1
+    assert body.count("<button") == 1
+
+def test_dashboard_omits_nonfunctional_navigation_controls() -> None:
+    body = client.get("/").text
+
+    assert 'href="#dashboard"' not in body
+    assert 'href="#invoices"' not in body
+    assert ">Dashboard<" not in body
+    assert ">Invoices<" not in body
+    assert ">API Docs<" not in body
+    assert "Unified Finance" in body
+    assert "Sync Invoices" in body
+    assert body.count("<button") == 1
+    assert body.count("fetch(") == 1
+    assert "innerHTML" not in body
+    assert "insertAdjacentHTML" not in body

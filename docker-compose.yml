@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  api:
+    build: .
+    container_name: unified-finance-api
+    ports:
+      - "8000:8000"
+    environment:
+      - PROVIDER_BASE_URL=http://host.docker.internal:5000
+      - PROVIDER_API_KEY=test-api-key-not-a-secret
