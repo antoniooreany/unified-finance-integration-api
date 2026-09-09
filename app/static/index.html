@@ -1,0 +1,558 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231e40af'/%3E%3Cpath d='M18 42V22h8c7 0 11 3 11 9 0 6-4 10-11 10h-3v1h-5Zm5-6h3c4 0 6-2 6-5 0-3-2-4-6-4h-3v9Z' fill='white'/%3E%3C/svg%3E"
+    />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Unified Finance</title>
+    <style>
+      *, *::before, *::after { box-sizing: border-box; }
+      :root {
+        --bg: #f4f6fa;
+        --surface: #ffffff;
+        --surface-muted: #f8fafc;
+        --primary: #1e40af;
+        --primary-hover: #1e3a8a;
+        --text: #0f172a;
+        --text-muted: #475569;
+        --border: #e2e8f0;
+        --border-strong: #cbd5e1;
+        --success-bg: #ecfdf5;
+        --success-border: #a7f3d0;
+        --success-fg: #047857;
+        --error-bg: #fef2f2;
+        --error-border: #fecaca;
+        --error-fg: #b91c1c;
+        --loading-bg: #eff6ff;
+        --loading-border: #bfdbfe;
+        --loading-fg: #1d4ed8;
+        --focus: #2563eb;
+        --warning-bg: #fff7ed;
+        --warning-border: #fed7aa;
+        --warning-fg: #9a3412;
+      }
+      html, body { margin: 0; padding: 0; }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          "Helvetica Neue", Arial, sans-serif;
+        font-size: 16px;
+        line-height: 1.5;
+        color: var(--text);
+        background: var(--bg);
+        min-height: 100vh;
+      }
+      .container {
+        max-width: 760px;
+        margin: 0 auto;
+        padding: 24px 16px 48px;
+      }
+      header h1 {
+        margin: 0 0 8px;
+        font-size: 1.85rem;
+        letter-spacing: -0.01em;
+      }
+      header .lead {
+        margin: 0 0 24px;
+        color: var(--text-muted);
+      }
+      .button-row {
+        margin-bottom: 16px;
+      }
+      button.sync {
+        font: inherit;
+        cursor: pointer;
+        background: var(--primary);
+        color: #fff;
+        border: 1px solid var(--primary);
+        border-radius: 8px;
+        padding: 12px 22px;
+        font-weight: 600;
+        font-size: 1rem;
+        min-height: 44px;
+        min-width: 220px;
+      }
+      button.sync:hover:not(:disabled) {
+        background: var(--primary-hover);
+        border-color: var(--primary-hover);
+      }
+      button.sync:disabled {
+        opacity: 0.65;
+        cursor: not-allowed;
+      }
+      :focus-visible {
+        outline: 3px solid var(--focus);
+        outline-offset: 2px;
+      }
+      .status {
+        padding: 12px 16px;
+        border-radius: 8px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        margin-bottom: 20px;
+      }
+      .status[data-state="loading"] {
+        background: var(--loading-bg);
+        border-color: var(--loading-border);
+      }
+      .status[data-state="success"] {
+        background: var(--success-bg);
+        border-color: var(--success-border);
+      }
+      .status[data-state="error"] {
+        background: var(--error-bg);
+        border-color: var(--error-border);
+      }
+      .status-text {
+        margin: 0;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .status[data-state="loading"] .status-text { color: var(--loading-fg); }
+      .status[data-state="success"] .status-text { color: var(--success-fg); }
+      .status[data-state="error"] .status-text { color: var(--error-fg); }
+      .status-icon {
+        font-weight: 700;
+        font-size: 1.05rem;
+        line-height: 1;
+      }
+      .status-hint {
+        margin: 8px 0 0;
+        color: var(--text-muted);
+        font-size: 0.95rem;
+      }
+      .summary {
+        margin-bottom: 20px;
+      }
+      .summary .cards {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+      .summary .card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 14px 16px;
+      }
+      .summary .card .label {
+        color: var(--text-muted);
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+      .summary .card .value {
+        font-size: 1.4rem;
+        font-weight: 700;
+        margin-top: 4px;
+        color: var(--text);
+      }
+      .summary .card.timestamp .value {
+        font-size: 0.95rem;
+        font-weight: 600;
+      }
+      table.invoices {
+        width: 100%;
+        border-collapse: collapse;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        overflow: hidden;
+        font-variant-numeric: tabular-nums;
+      }
+      table.invoices caption {
+        text-align: left;
+        padding: 12px 16px;
+        font-weight: 600;
+        background: var(--surface-muted);
+        border-bottom: 1px solid var(--border);
+        color: var(--text);
+      }
+      table.invoices th, table.invoices td {
+        padding: 10px 12px;
+        text-align: left;
+        border-bottom: 1px solid var(--border);
+        vertical-align: top;
+      }
+      table.invoices th {
+        background: var(--surface-muted);
+        font-size: 0.78rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: var(--text-muted);
+      }
+      table.invoices tbody tr:nth-child(even) td {
+        background: #fafbfc;
+      }
+      table.invoices tbody tr:last-child td {
+        border-bottom: 0;
+      }
+      table.invoices tbody td.numeric {
+        text-align: right;
+        white-space: nowrap;
+      }
+      .status-badge {
+        display: inline-block;
+        padding: 3px 10px;
+        border-radius: 9999px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        line-height: 1.25;
+        white-space: nowrap;
+        border: 1px solid transparent;
+      }
+      .status-badge--paid {
+        background: #ecfdf5;
+        border-color: #a7f3d0;
+        color: #047857;
+      }
+      .status-badge--unpaid {
+        background: #fff7ed;
+        border-color: #fed7aa;
+        color: #9a3412;
+      }
+      .status-badge--overdue {
+        background: #fef2f2;
+        border-color: #fecaca;
+        color: #b91c1c;
+      }
+      .status-badge--unknown {
+        background: #f1f5f9;
+        border-color: #cbd5e1;
+        color: #334155;
+      }
+      .disclaimer {
+        margin-top: 24px;
+        padding: 12px 16px;
+        background: var(--warning-bg);
+        border: 1px solid var(--warning-border);
+        border-radius: 8px;
+        color: var(--warning-fg);
+        font-size: 0.95rem;
+      }
+      .visually-hidden {
+        position: absolute !important;
+        width: 1px; height: 1px;
+        padding: 0; margin: -1px;
+        overflow: hidden; clip: rect(0,0,0,0);
+        white-space: nowrap; border: 0;
+      }
+      @media (min-width: 540px) {
+        .summary .cards { grid-template-columns: repeat(3, 1fr); }
+      }
+      @media (min-width: 720px) {
+        .container { padding: 32px 24px 64px; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1 data-testid="dashboard-title">Unified Finance</h1>
+        <p class="lead">Manage and view provider invoices in one place.</p>
+      </header>
+
+      <main>
+        <div class="button-row">
+          <button type="button" class="sync" data-testid="sync-button">Sync Invoices</button>
+        </div>
+
+        <div
+          class="status"
+          data-testid="sync-status"
+          role="status"
+          aria-live="polite"
+          aria-busy="false"
+          data-state="idle"
+        >
+          <p class="status-text">
+            <span class="status-icon" aria-hidden="true">●</span>
+            <span data-testid="sync-status-text">Ready to sync.</span>
+          </p>
+          <p class="status-hint" data-testid="sync-empty-hint">Click “Sync Invoices” to fetch current data.</p>
+        </div>
+
+        <section class="summary" data-testid="invoice-summary" hidden>
+          <h2 class="visually-hidden">Sync Summary</h2>
+          <div class="cards">
+            <div class="card">
+              <div class="label">Invoices Fetched</div>
+              <div class="value" data-testid="summary-count">0</div>
+            </div>
+            <div class="card">
+              <div class="label">Currencies</div>
+              <div class="value" data-testid="summary-currencies">0</div>
+            </div>
+            <div class="card timestamp">
+              <div class="label">Last Updated</div>
+              <div class="value" data-testid="summary-updated">—</div>
+            </div>
+          </div>
+        </section>
+
+        <table class="invoices" data-testid="invoice-table" hidden>
+          <caption>Synchronized Invoices</caption>
+          <thead>
+            <tr>
+              <th scope="col">Invoice #</th>
+              <th scope="col">Customer</th>
+              <th scope="col">Amount</th>
+              <th scope="col">Currency</th>
+              <th scope="col">Invoice Date</th>
+              <th scope="col">Due Date</th>
+              <th scope="col">Status</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </main>
+
+      <footer>
+        <p class="disclaimer" data-testid="p0-disclaimer">
+          P0 Demo: Invoices are fetched in real time but are not persisted.
+        </p>
+      </footer>
+    </div>
+
+    <script>
+      "use strict";
+      (function () {
+        const SYNC_ENDPOINT = "/api/v1/sync/invoices";
+        const STATUS_TRANSLATIONS = {
+          PAID: "Paid",
+          UNPAID: "Unpaid",
+          OVERDUE: "Overdue",
+        };
+        const ICON_BY_STATE = {
+          idle: "●",
+          loading: "…",
+          success: "✓",
+          error: "⚠",
+        };
+
+        const els = {};
+        function cacheEls() {
+          els.button = document.querySelector('[data-testid="sync-button"]');
+          els.status = document.querySelector('[data-testid="sync-status"]');
+          els.statusText = document.querySelector('[data-testid="sync-status-text"]');
+          els.emptyHint = document.querySelector('[data-testid="sync-empty-hint"]');
+          els.statusIcon = null;
+          if (els.status) {
+            const iconCandidate = els.status.querySelector(".status-icon");
+            if (iconCandidate) els.statusIcon = iconCandidate;
+          }
+          els.summary = document.querySelector('[data-testid="invoice-summary"]');
+          els.summaryCount = document.querySelector('[data-testid="summary-count"]');
+          els.summaryCurrencies = document.querySelector('[data-testid="summary-currencies"]');
+          els.summaryUpdated = document.querySelector('[data-testid="summary-updated"]');
+          els.table = document.querySelector('[data-testid="invoice-table"]');
+          els.tbody = els.table ? els.table.querySelector("tbody") : null;
+        }
+
+        // Preserve prior successful render so a transient error does not blank
+        // the table when the user has previously seen real data.
+        let lastSuccess = null;
+
+        function safeText(value) {
+          if (value === null || value === undefined) return "—";
+          const str = String(value);
+          return str.length > 0 ? str : "—";
+        }
+
+        function formatAmount(invoice) {
+          const raw = invoice && invoice.total_amount;
+          const code = safeText(invoice && invoice.currency);
+          if (typeof raw !== "number" || !Number.isFinite(raw)) {
+            return typeof raw === "number" ? raw + " " + code : "—";
+          }
+          if (/^[A-Z]{3}$/.test(code)) {
+            try {
+              return new Intl.NumberFormat("en-US", {
+                style: "currency",
+                currency: code,
+              }).format(raw);
+            } catch (e) {
+              return raw + " " + code;
+            }
+          }
+          return raw + " " + code;
+        }
+
+        function formatStatus(value) {
+          const raw = safeText(value);
+          if (raw === "—") return "—";
+          if (Object.prototype.hasOwnProperty.call(STATUS_TRANSLATIONS, raw)) {
+            return STATUS_TRANSLATIONS[raw];
+          }
+          return raw;
+        }
+
+        function createStatusBadge(value) {
+          const raw = safeText(value);
+          const badge = document.createElement("span");
+          if (raw === "PAID") {
+            badge.className = "status-badge status-badge--paid";
+            badge.textContent = "Paid";
+          } else if (raw === "UNPAID") {
+            badge.className = "status-badge status-badge--unpaid";
+            badge.textContent = "Unpaid";
+          } else if (raw === "OVERDUE") {
+            badge.className = "status-badge status-badge--overdue";
+            badge.textContent = "Overdue";
+          } else {
+            badge.className = "status-badge status-badge--unknown";
+            badge.textContent = formatStatus(value);
+          }
+          return badge;
+        }
+
+        function setStatus(text, state) {
+          if (!els.status || !els.statusText) return;
+          els.statusText.textContent = text;
+          const stateValue = state || "idle";
+          els.status.setAttribute("aria-busy", stateValue === "loading" ? "true" : "false");
+          els.status.setAttribute("data-state", stateValue);
+          if (els.statusIcon && Object.prototype.hasOwnProperty.call(ICON_BY_STATE, stateValue)) {
+            els.statusIcon.textContent = ICON_BY_STATE[stateValue];
+          }
+          if (els.emptyHint) {
+            els.emptyHint.hidden = stateValue !== "idle";
+          }
+        }
+
+        function clearTbody() {
+          if (!els.tbody) return;
+          while (els.tbody.firstChild) {
+            els.tbody.removeChild(els.tbody.firstChild);
+          }
+        }
+
+        function renderInvoices(invoices) {
+          clearTbody();
+          if (!els.tbody || !Array.isArray(invoices)) return;
+          const fragment = document.createDocumentFragment();
+          invoices.forEach(function (invoice) {
+            if (!invoice || typeof invoice !== "object") return;
+            const tr = document.createElement("tr");
+            const amountHtml = formatAmount(invoice);
+            const values = [
+              safeText(invoice.id),
+              safeText(invoice.contact_name),
+              amountHtml,
+              safeText(invoice.currency),
+              safeText(invoice.date),
+              safeText(invoice.due_date),
+            ];
+            values.forEach(function (value, idx) {
+              const td = document.createElement("td");
+              td.textContent = value;
+              if (idx === 2) td.className = "numeric";
+              tr.appendChild(td);
+            });
+            const statusTd = document.createElement("td");
+            const badge = createStatusBadge(invoice.status);
+            statusTd.appendChild(badge);
+            tr.appendChild(statusTd);
+            fragment.appendChild(tr);
+          });
+          els.tbody.appendChild(fragment);
+        }
+
+        function renderSummary(invoices) {
+          const count = Array.isArray(invoices) ? invoices.length : 0;
+          const currencies = new Set();
+          if (Array.isArray(invoices)) {
+            invoices.forEach(function (inv) {
+              if (inv && typeof inv.currency === "string" && inv.currency.length > 0) {
+                currencies.add(inv.currency);
+              }
+            });
+          }
+          const timestamp = new Date().toLocaleString("en-US");
+          if (els.summaryCount) els.summaryCount.textContent = String(count);
+          if (els.summaryCurrencies) els.summaryCurrencies.textContent = String(currencies.size);
+          if (els.summaryUpdated) els.summaryUpdated.textContent = timestamp;
+          if (els.summary) els.summary.hidden = false;
+        }
+
+        function renderSuccess(invoices, fetchedCount) {
+          renderInvoices(invoices);
+          renderSummary(invoices);
+          if (els.table) els.table.hidden = false;
+          setStatus(
+            "Sync completed. Fetched " + fetchedCount +
+              " invoices. Provider data received and processed.",
+            "success"
+          );
+          lastSuccess = { invoices: invoices, fetchedCount: fetchedCount };
+        }
+
+        function renderError() {
+          setStatus(
+            "Failed to update invoices. Check your connection and try again.",
+            "error"
+          );
+          if (!lastSuccess) {
+            if (els.summary) els.summary.hidden = true;
+            if (els.table) els.table.hidden = true;
+            clearTbody();
+          }
+        }
+
+        function isValidPayload(data) {
+          if (!data || typeof data !== "object") return false;
+          if (data.status !== "success") return false;
+          if (typeof data.fetched_count !== "number") return false;
+          if (typeof data.fetched_count === "boolean") return false;
+          if (!Array.isArray(data.invoices)) return false;
+          if (data.fetched_count !== data.invoices.length) return false;
+          return true;
+        }
+
+        async function performSync() {
+          if (els.button) els.button.disabled = true;
+          setStatus("Fetching and processing invoices…", "loading");
+          let response = null;
+          let data = null;
+          let networkOk = false;
+          try {
+            response = await fetch(SYNC_ENDPOINT, { method: "POST" });
+            networkOk = response.ok;
+            if (response.ok) {
+              try {
+                data = await response.json();
+              } catch (e) {
+                data = null;
+              }
+            }
+          } catch (e) {
+            networkOk = false;
+            data = null;
+          }
+          if (networkOk && isValidPayload(data)) {
+            renderSuccess(data.invoices, data.fetched_count);
+          } else {
+            renderError();
+          }
+          if (els.button) els.button.disabled = false;
+        }
+
+        function init() {
+          cacheEls();
+          if (!els.button) return;
+          els.button.addEventListener("click", performSync);
+        }
+
+        if (document.readyState === "loading") {
+          document.addEventListener("DOMContentLoaded", init);
+        } else {
+          init();
+        }
+      })();
+    </script>
+  </body>
+</html>

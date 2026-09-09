@@ -1,5 +1,7 @@
+from pathlib import Path
+
 from fastapi import FastAPI, HTTPException
-from fastapi.responses import JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 
 from app.provider import fetch_invoices
 from app.schemas import SyncResponse
@@ -25,3 +27,10 @@ async def sync_invoices():
         fetched_count=len(invoices),
         invoices=invoices
     )
+
+INDEX_HTML = Path(__file__).resolve().parent / "static" / "index.html"
+
+
+@app.get("/", response_class=HTMLResponse)
+def dashboard() -> str:
+    return INDEX_HTML.read_text(encoding="utf-8")
