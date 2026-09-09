@@ -70,3 +70,24 @@ def test_dashboard_status_badges_and_safe_dom_manipulation() -> None:
     assert "textContent" in body
     assert "innerHTML" not in body
     assert "insertAdjacentHTML" not in body
+
+def test_dashboard_has_minimal_primary_navigation() -> None:
+    body = client.get("/").text
+
+    assert body.count("<nav") == 1
+    assert 'aria-label="Primary navigation"' in body
+
+    assert 'href="#dashboard"' in body
+    assert ">Dashboard<" in body
+
+    assert 'href="#invoices"' in body
+    assert ">Invoices<" in body
+
+    assert 'href="/docs"' in body
+    assert ">API Docs<" in body
+
+    assert 'id="dashboard"' in body
+    assert 'id="invoices"' in body
+
+    assert body.count("<button") == 1
+    assert body.count("fetch(") == 1
