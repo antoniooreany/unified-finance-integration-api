@@ -2,6 +2,14 @@
 
 Unified Finance Integration API is a robust, lightweight integration layer designed to fetch, normalize, and present financial data (e.g., invoices) from external providers. It acts as an abstraction layer for third-party billing providers.
 
+> [!TIP]
+> **🎥 Смотреть демо (Live Demo):** Посмотрите, как работает дашборд в реальном времени! Нажмите Play ниже.
+
+<div align="center">
+  <video src="docs/demo.mp4" controls width="100%" style="border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);"></video>
+</div>
+
+
 ## 🚀 Features
 - **FastAPI Backend**: High-performance asynchronous API with automatic Swagger UI documentation.
 - **Data Validation & Normalization**: Uses Pydantic for strict schema validation of provider responses.
@@ -40,7 +48,7 @@ docker-compose down
 ### 1. Setup the environment
 `ash
 python -m venv .venv
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+source .venv/bin/activate  # On Windows: .venv\Scriptsctivate
 pip install -r requirements.txt
 `
 
@@ -73,4 +81,4 @@ When the API is running, open http://localhost:8000/ in a browser. The dashboard
 1. **Sync Invoices**: Request current invoices in real-time through the POST /api/v1/sync/invoices endpoint.
 2. **View Details**: Expand normalized invoices in a responsive CSS Grid layout.
 
-*Note: The P0 dashboard currently acts as a real-time proxy and does not store or persist invoice history.*
+*Note: The P0 Demo currently acts as a real-time proxy and does not store or persist invoice history.*
