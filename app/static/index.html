@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ru">
+<html lang="en">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -249,12 +249,12 @@
     <div class="container">
       <header>
         <h1 data-testid="dashboard-title">Unified Finance</h1>
-        <p class="lead">Получайте счета от поставщиков в одном месте.</p>
+        <p class="lead">Manage and view provider invoices in one place.</p>
       </header>
 
       <main>
         <div class="button-row">
-          <button type="button" class="sync" data-testid="sync-button">Синхронизировать счета</button>
+          <button type="button" class="sync" data-testid="sync-button">Sync Invoices</button>
         </div>
 
         <div
@@ -267,40 +267,40 @@
         >
           <p class="status-text">
             <span class="status-icon" aria-hidden="true">●</span>
-            <span data-testid="sync-status-text">Готово к синхронизации.</span>
+            <span data-testid="sync-status-text">Ready to sync.</span>
           </p>
-          <p class="status-hint" data-testid="sync-empty-hint">Нажмите «Синхронизировать счета», чтобы получить актуальные данные.</p>
+          <p class="status-hint" data-testid="sync-empty-hint">Click “Sync Invoices” to fetch current data.</p>
         </div>
 
         <section class="summary" data-testid="invoice-summary" hidden>
-          <h2 class="visually-hidden">Сводка синхронизации</h2>
+          <h2 class="visually-hidden">Sync Summary</h2>
           <div class="cards">
             <div class="card">
-              <div class="label">Получено счетов</div>
+              <div class="label">Invoices Fetched</div>
               <div class="value" data-testid="summary-count">0</div>
             </div>
             <div class="card">
-              <div class="label">Валют</div>
+              <div class="label">Currencies</div>
               <div class="value" data-testid="summary-currencies">0</div>
             </div>
             <div class="card timestamp">
-              <div class="label">Последнее обновление</div>
+              <div class="label">Last Updated</div>
               <div class="value" data-testid="summary-updated">—</div>
             </div>
           </div>
         </section>
 
         <table class="invoices" data-testid="invoice-table" hidden>
-          <caption>Синхронизированные счета</caption>
+          <caption>Synchronized Invoices</caption>
           <thead>
             <tr>
-              <th scope="col">№ счёта</th>
-              <th scope="col">Клиент</th>
-              <th scope="col">Сумма</th>
-              <th scope="col">Валюта</th>
-              <th scope="col">Дата счёта</th>
-              <th scope="col">Срок оплаты</th>
-              <th scope="col">Статус</th>
+              <th scope="col">Invoice #</th>
+              <th scope="col">Customer</th>
+              <th scope="col">Amount</th>
+              <th scope="col">Currency</th>
+              <th scope="col">Invoice Date</th>
+              <th scope="col">Due Date</th>
+              <th scope="col">Status</th>
             </tr>
           </thead>
           <tbody></tbody>
@@ -309,7 +309,7 @@
 
       <footer>
         <p class="disclaimer" data-testid="p0-disclaimer">
-          Демо P0: счета получаются в реальном времени, но пока не сохраняются.
+          P0 Demo: Invoices are fetched in real time but are not persisted.
         </p>
       </footer>
     </div>
@@ -319,9 +319,9 @@
       (function () {
         const SYNC_ENDPOINT = "/api/v1/sync/invoices";
         const STATUS_TRANSLATIONS = {
-          PAID: "Оплачен",
-          UNPAID: "Не оплачен",
-          OVERDUE: "Просрочен",
+          PAID: "Paid",
+          UNPAID: "Unpaid",
+          OVERDUE: "Overdue",
         };
         const ICON_BY_STATE = {
           idle: "●",
@@ -367,7 +367,7 @@
           }
           if (/^[A-Z]{3}$/.test(code)) {
             try {
-              return new Intl.NumberFormat("ru-RU", {
+              return new Intl.NumberFormat("en-US", {
                 style: "currency",
                 currency: code,
               }).format(raw);
@@ -392,13 +392,13 @@
           const badge = document.createElement("span");
           if (raw === "PAID") {
             badge.className = "status-badge status-badge--paid";
-            badge.textContent = "Оплачен";
+            badge.textContent = "Paid";
           } else if (raw === "UNPAID") {
             badge.className = "status-badge status-badge--unpaid";
-            badge.textContent = "Не оплачен";
+            badge.textContent = "Unpaid";
           } else if (raw === "OVERDUE") {
             badge.className = "status-badge status-badge--overdue";
-            badge.textContent = "Просрочен";
+            badge.textContent = "Overdue";
           } else {
             badge.className = "status-badge status-badge--unknown";
             badge.textContent = formatStatus(value);
@@ -468,7 +468,7 @@
               }
             });
           }
-          const timestamp = new Date().toLocaleString("ru-RU");
+          const timestamp = new Date().toLocaleString("en-US");
           if (els.summaryCount) els.summaryCount.textContent = String(count);
           if (els.summaryCurrencies) els.summaryCurrencies.textContent = String(currencies.size);
           if (els.summaryUpdated) els.summaryUpdated.textContent = timestamp;
@@ -480,8 +480,8 @@
           renderSummary(invoices);
           if (els.table) els.table.hidden = false;
           setStatus(
-            "Синхронизация завершена. Получено счетов: " + fetchedCount +
-              ". Данные от поставщика получены и обработаны.",
+            "Sync completed. Fetched " + fetchedCount +
+              " invoices. Provider data received and processed.",
             "success"
           );
           lastSuccess = { invoices: invoices, fetchedCount: fetchedCount };
@@ -489,7 +489,7 @@
 
         function renderError() {
           setStatus(
-            "Не удалось обновить счета. Проверьте подключение и повторите попытку.",
+            "Failed to update invoices. Check your connection and try again.",
             "error"
           );
           if (!lastSuccess) {
@@ -511,7 +511,7 @@
 
         async function performSync() {
           if (els.button) els.button.disabled = true;
-          setStatus("Получаем и обрабатываем счета…", "loading");
+          setStatus("Fetching and processing invoices…", "loading");
           let response = null;
           let data = null;
           let networkOk = false;

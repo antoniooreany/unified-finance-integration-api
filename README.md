@@ -24,7 +24,7 @@ curl http://localhost:8000/health
 ## Dashboard
 
 When the API is running, open `http://localhost:8000/` in a browser to use the
-human-facing Unified Finance dashboard. Press **«Синхронизировать счета»** to
+human-facing Unified Finance dashboard. Press **Sync Invoices** to
 request current invoices through the existing `POST /api/v1/sync/invoices`
 endpoint.
 

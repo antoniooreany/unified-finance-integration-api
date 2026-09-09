@@ -28,12 +28,13 @@ def test_dashboard_contains_required_semantic_markers() -> None:
         assert marker in body
 
 
-def test_dashboard_uses_required_russian_copy() -> None:
+def test_dashboard_uses_required_copy() -> None:
     body = client.get("/").text
 
+    assert '<html lang="en">' in body
     assert "Unified Finance" in body
-    assert "Синхронизировать счета" in body
-    assert "Демо P0: счета получаются в реальном времени, но пока не сохраняются." in body
+    assert "Sync Invoices" in body
+    assert "P0 Demo: Invoices are fetched in real time but are not persisted." in body
 
 
 def test_dashboard_has_no_forbidden_client_tokens() -> None:
@@ -63,7 +64,7 @@ def test_dashboard_status_badges_and_safe_dom_manipulation() -> None:
     ):
         assert class_name in body
 
-    for label in ("Оплачен", "Не оплачен", "Просрочен"):
+    for label in ("Paid", "Unpaid", "Overdue"):
         assert label in body
 
     assert 'document.createElement("span")' in body
