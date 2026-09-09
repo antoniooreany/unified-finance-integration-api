@@ -166,3 +166,10 @@ def test_dashboard_omits_nonfunctional_navigation_controls() -> None:
     assert body.count("fetch(") == 1
     assert "innerHTML" not in body
     assert "insertAdjacentHTML" not in body
+
+def test_dashboard_uses_high_contrast_colors() -> None:
+    body = client.get("/").text
+
+    assert "--bg: #f1f5f9;" in body
+    assert "--text-muted: #334155;" in body
+    assert "--border: #cbd5e1;" in body
