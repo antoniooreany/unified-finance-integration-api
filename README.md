@@ -20,3 +20,13 @@ To verify the container is running successfully, hit the health check endpoint:
 ```bash
 curl http://localhost:8000/health
 ```
+
+## Dashboard
+
+When the API is running, open `http://localhost:8000/` in a browser to use the
+human-facing Unified Finance dashboard. Press **«Синхронизировать счета»** to
+request current invoices through the existing `POST /api/v1/sync/invoices`
+endpoint.
+
+The P0 dashboard displays the response from the current synchronization only:
+it does not store invoices in a database or provide invoice history.
