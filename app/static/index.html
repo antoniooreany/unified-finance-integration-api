@@ -337,6 +337,7 @@
               <th scope="col">Invoice Date</th>
               <th scope="col">Due Date</th>
               <th scope="col">Status</th>
+              <th scope="col">Actions</th>
             </tr>
           </thead>
           <tbody></tbody>
@@ -467,6 +468,7 @@
           clearTbody();
           if (!els.tbody || !Array.isArray(invoices)) return;
           const fragment = document.createDocumentFragment();
+          let rowIndex = 0;
           invoices.forEach(function (invoice) {
             if (!invoice || typeof invoice !== "object") return;
             const tr = document.createElement("tr");
@@ -489,7 +491,40 @@
             const badge = createStatusBadge(invoice.status);
             statusTd.appendChild(badge);
             tr.appendChild(statusTd);
+
+            const actionTd = document.createElement("td");
+            const btn = document.createElement("button");
+            btn.type = "button";
+            btn.textContent = "View details";
+            btn.setAttribute("aria-expanded", "false");
+            const detailsId = "invoice-details-" + rowIndex++;
+            btn.setAttribute("aria-controls", detailsId);
+            actionTd.appendChild(btn);
+            tr.appendChild(actionTd);
+
             fragment.appendChild(tr);
+
+            const detailTr = document.createElement("tr");
+            detailTr.id = detailsId;
+            detailTr.hidden = true;
+            const detailsCell = document.createElement("td");
+            detailsCell.setAttribute("colspan", "8"); // colspan="8"
+            detailsCell.textContent = "Invoice number: " + safeText(invoice.id) + " | Customer: " + safeText(invoice.contact_name) + " | Amount: " + amountHtml + " | Currency: " + safeText(invoice.currency) + " | Invoice date: " + safeText(invoice.date) + " | Due date: " + safeText(invoice.due_date) + " | Status: " + safeText(invoice.status);
+            detailTr.appendChild(detailsCell);
+            fragment.appendChild(detailTr);
+
+            btn.addEventListener("click", function () {
+              const expanded = btn.getAttribute("aria-expanded") === "true";
+              if (expanded) {
+                btn.setAttribute("aria-expanded", "false");
+                btn.textContent = "View details";
+                detailTr.hidden = true;
+              } else {
+                btn.setAttribute("aria-expanded", "true");
+                btn.textContent = "Hide details";
+                detailTr.hidden = false;
+              }
+            });
           });
           els.tbody.appendChild(fragment);
         }

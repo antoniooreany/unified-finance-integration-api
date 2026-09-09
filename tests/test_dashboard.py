@@ -91,3 +91,22 @@ def test_dashboard_has_minimal_primary_navigation() -> None:
 
     assert body.count("<button") == 1
     assert body.count("fetch(") == 1
+
+def test_dashboard_has_expandable_invoice_details() -> None:
+    body = client.get("/").text
+
+    assert "Actions" in body
+    assert "View details" in body
+    assert "Hide details" in body
+    assert "aria-expanded" in body
+    assert "aria-controls" in body
+    assert "invoice-details-" in body
+    assert "colspan = 8" in body or 'colspan="8"' in body
+    assert 'document.createElement("button")' in body
+    assert 'document.createElement("tr")' in body
+    assert 'document.createElement("td")' in body
+    assert "textContent" in body
+    assert "innerHTML" not in body
+    assert "insertAdjacentHTML" not in body
+    assert body.count("fetch(") == 1
+    assert body.count("<button") == 1
