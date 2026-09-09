@@ -12,7 +12,7 @@ async def fetch_invoices() -> list[Invoice]:
     url = f"{settings.provider_base_url.rstrip('/')}/api/v1/invoices"
     headers = {"X-API-Key": settings.provider_api_key}
 
-    async with httpx.AsyncClient() as client:
+    async with httpx.AsyncClient(timeout=httpx.Timeout(5.0)) as client:
         try:
             response = await client.get(url, headers=headers)
         except (httpx.TimeoutException, httpx.ConnectError) as e:

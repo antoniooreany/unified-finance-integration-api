@@ -144,3 +144,42 @@ def test_sync_invoices_proof_mocked_network(mock_env):
     with respx.mock(assert_all_mocked=True), pytest.raises(Exception, match=".*"):
         # Do not mock the endpoint. The client will try to call it and respx will block it.
         client.post("/api/v1/sync/invoices")
+
+def test_fetch_invoices_uses_explicit_finite_timeout(mock_env, monkeypatch):
+    """Regression test for workspace INV-015: every external HTTP call must use an explicit finite timeout."""
+    captured = {}
+
+    class FakeAsyncClient:
+        def __init__(self, *args, **kwargs):
+            captured.update(kwargs)
+
+        async def __aenter__(self):
+            return self
+
+        async def __aexit__(self, *args):
+            return None
+
+        async def get(self, *args, **kwargs):
+            raise httpx.TimeoutException("forced timeout for test")
+
+    monkeypatch.setattr("app.provider.httpx.AsyncClient", FakeAsyncClient)
+
+    response = client.post("/api/v1/sync/invoices")
+    assert response.status_code == 503
+    assert response.json() == {"error": "Provider unavailable"}
+
+    assert "timeout" in captured, "timeout kwarg was not passed to httpx.AsyncClient"
+    timeout = captured["timeout"]
+    assert isinstance(timeout, httpx.Timeout), (
+        f"timeout must be httpx.Timeout, got {type(timeout).__name__}"
+    )
+
+    for phase in ("connect", "read", "write", "pool"):
+        value = getattr(timeout, phase)
+        assert isinstance(value, (int, float)), (
+            f"timeout.{phase} must be numeric, got {type(value).__name__}"
+        )
+        assert value > 0, f"timeout.{phase} must be positive, got {value}"
+        assert value != float("inf"), f"timeout.{phase} must be finite"
+
+    assert timeout.connect == 5.0, f"expected connect timeout 5.0s, got {timeout.connect}"
