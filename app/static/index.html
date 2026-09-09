@@ -247,6 +247,32 @@
       @media (min-width: 720px) {
         .container { padding: 32px 24px 64px; }
       }
+
+      .primary-nav {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 24px;
+      }
+      .nav-link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        color: var(--primary);
+        background: var(--surface);
+        border: 1px solid var(--border-strong);
+        border-radius: 8px;
+        padding: 8px 16px;
+        font-weight: 500;
+        font-size: 0.9rem;
+      }
+      .nav-link:hover {
+        background: var(--primary-hover);
+        color: var(--surface);
+        border-color: var(--primary-hover);
+      }
     </style>
   </head>
   <body>
@@ -255,8 +281,14 @@
         <h1 data-testid="dashboard-title">Unified Finance</h1>
         <p class="lead">Manage and view provider invoices in one place.</p>
       </header>
+      <nav class="primary-nav" aria-label="Primary navigation">
+        <a class="nav-link" href="#dashboard">Dashboard</a>
+        <a class="nav-link" href="#invoices">Invoices</a>
+        <a class="nav-link" href="/docs">API Docs</a>
+      </nav>
 
-      <main>
+
+      <main id="dashboard">
         <div class="button-row">
           <button type="button" class="sync" data-testid="sync-button">Sync Invoices</button>
         </div>
@@ -294,7 +326,7 @@
           </div>
         </section>
 
-        <table class="invoices" data-testid="invoice-table" hidden>
+        <table id="invoices" class="invoices" data-testid="invoice-table" hidden>
           <caption>Synchronized Invoices</caption>
           <thead>
             <tr>
